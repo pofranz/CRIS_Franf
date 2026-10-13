@@ -1,0 +1,69 @@
+{
+  "entities": {
+    "registry_records": {
+      "description": "Civil Registry records for births, marriages, deaths, and legal instruments",
+      "fields": {
+        "id": { "type": "string", "required": true },
+        "category": { "type": "string", "required": true },
+        "registryNumber": { "type": "string", "required": false },
+        "bookNumber": { "type": "string", "required": false },
+        "pageNumber": { "type": "string", "required": false },
+        "registryDate": { "type": "string", "required": false },
+        "name": { "type": "string", "required": false },
+        "updatedAt": { "type": "string", "required": true }
+      }
+    },
+    "issued_certifications": {
+      "description": "Issued official civil certifications and verification records",
+      "fields": {
+        "id": { "type": "string", "required": true },
+        "certNumber": { "type": "string", "required": true },
+        "formType": { "type": "string", "required": true },
+        "formLetter": { "type": "string", "required": true },
+        "category": { "type": "string", "required": true },
+        "personName": { "type": "string", "required": true },
+        "orNumber": { "type": "string", "required": false },
+        "verificationCode": { "type": "string", "required": true },
+        "dateIssued": { "type": "string", "required": true }
+      }
+    },
+    "custom_templates": {
+      "description": "Custom LCR Form certificate styling and WYSIWYG templates",
+      "fields": {
+        "id": { "type": "string", "required": true },
+        "formType": { "type": "string", "required": true },
+        "formLetter": { "type": "string", "required": true },
+        "name": { "type": "string", "required": true },
+        "updatedAt": { "type": "string", "required": true }
+      }
+    },
+    "system_settings": {
+      "description": "Municipal Civil Registrar office settings, staff, and configuration",
+      "fields": {
+        "id": { "type": "string", "required": true },
+        "officeName": { "type": "string", "required": true },
+        "municipality": { "type": "string", "required": true },
+        "province": { "type": "string", "required": true },
+        "updatedAt": { "type": "string", "required": true }
+      }
+    },
+    "audit_logs": {
+      "description": "Audit trail entries tracking registry operations and deletions",
+      "fields": {
+        "id": { "type": "string", "required": true },
+        "timestamp": { "type": "string", "required": true },
+        "username": { "type": "string", "required": true },
+        "action": { "type": "string", "required": true },
+        "description": { "type": "string", "required": true }
+      }
+    }
+  },
+  "auth": {
+    "provider": "custom_cris_auth",
+    "roles": ["superadmin", "mcr", "admin", "encoder", "viewer", "guest"]
+  },
+  "securityRules": {
+    "public_verification": "Allow read access to issued certifications for public QR verification",
+    "authenticated_access": "Allow read and write access for authorized CRIS registry operations and cloud synchronization across desktop and mobile devices"
+  }
+}

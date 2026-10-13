@@ -1,0 +1,92 @@
+@import "tailwindcss";
+
+:root {
+  --primary: #0F172A;
+  --accent: #2563EB;
+  --border: #E2E8F0;
+}
+
+.status-badge {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.status-a {
+  background-color: #DCFCE7;
+  color: #166534;
+}
+
+.status-b {
+  background-color: #FEF9C3;
+  color: #854D0E;
+}
+
+.status-c {
+  background-color: #FEE2E2;
+  color: #991B1B;
+}
+
+@media print {
+  @page {
+    size: 8.5in 13in portrait;
+    margin: 0;
+  }
+
+  *, *::before, *::after {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  html, body {
+    background: white !important;
+    color: black !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  /* Hide app navigation, headers, footers, action buttons, and modal background overlays */
+  nav, header, aside, button, .modal-backdrop, .no-print, .print-toolbar {
+    display: none !important;
+  }
+
+  /* Reset fixed positioning and overflow on modal overlays during print */
+  .fixed.inset-0,
+  .fixed.inset-0 > div,
+  .fixed.inset-0 .overflow-y-auto {
+    position: static !important;
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: visible !important;
+    max-height: none !important;
+    height: auto !important;
+    box-shadow: none !important;
+    border: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* Target certificate card */
+  #printable-lcr-certificate, .wysiwyg-rendered-certificate {
+    position: relative !important;
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: black !important;
+    page-break-inside: avoid;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}

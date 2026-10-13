@@ -1,0 +1,6 @@
+{
+  "name": "Civil Registry Information System",
+  "description": "Civil Registry Information System (CRIS) for recording book indices, archiving PDF documents, and issuing LCR 1A/B/C, 2A/B/C, and 3A/B/C certifications.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
