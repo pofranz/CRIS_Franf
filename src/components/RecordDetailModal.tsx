@@ -276,6 +276,22 @@ export const RecordDetailModal: React.FC<RecordDetailModalProps> = ({
                     <span className="text-slate-500 block">Subject / Party Name:</span>
                     <strong className="text-slate-900 text-sm">{(record as any).name}</strong>
                   </div>
+                  {(record as any).orNumber && (
+                    <div>
+                      <span className="text-slate-500 block">Official Receipt (O.R.):</span>
+                      <strong className="text-emerald-700 font-mono text-xs font-bold">
+                        {(record as any).orNumber}
+                      </strong>
+                    </div>
+                  )}
+                  {(record as any).amountPaid && (
+                    <div>
+                      <span className="text-slate-500 block">Amount Paid (Revenue):</span>
+                      <strong className="text-emerald-700 font-mono text-xs font-bold">
+                        ₱{parseFloat(String((record as any).amountPaid).replace(/[^0-9.]/g, '') || '0').toFixed(2)}
+                      </strong>
+                    </div>
+                  )}
                 </>
               )}
             </div>

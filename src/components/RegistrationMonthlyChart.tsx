@@ -28,7 +28,7 @@ import {
 } from 'lucide-react';
 
 interface RegistrationMonthlyChartProps {
-  category: RegistryCategory | 'certifications' | 'settings' | 'certificate-designer';
+  category: RegistryCategory | 'certifications' | 'settings' | 'certificate-designer' | 'notifications' | 'revenue';
   records: AnyRegistryRecord[];
   certifications?: IssuedCertification[];
 }
@@ -134,7 +134,11 @@ export const RegistrationMonthlyChart: React.FC<RegistrationMonthlyChartProps> =
 }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
-  const isUnsupportedCategory = category === 'settings' || category === 'certificate-designer';
+  const isUnsupportedCategory =
+    category === 'settings' ||
+    category === 'certificate-designer' ||
+    category === 'notifications' ||
+    category === 'revenue';
 
   const activeMeta = CATEGORY_CONFIG[category] || CATEGORY_CONFIG.births;
   const CategoryIcon = activeMeta.icon;

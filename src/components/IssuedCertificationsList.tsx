@@ -22,6 +22,7 @@ import {
   X,
   Trash2,
   Sliders,
+  Receipt,
 } from 'lucide-react';
 
 interface IssuedCertificationsListProps {
@@ -57,6 +58,10 @@ export const IssuedCertificationsList: React.FC<IssuedCertificationsListProps> =
   const [certToDelete, setCertToDelete] = useState<IssuedCertification | null>(null);
   const [bulkDeleteTargetIds, setBulkDeleteTargetIds] = useState<string[] | null>(null);
   const [showClearAllConfirm, setShowClearAllConfirm] = useState(false);
+
+  const certsRevenue = useMemo(() => {
+    return storageService.getRevenueSummary();
+  }, [certifications]);
 
   const filteredCerts = useMemo(() => {
     return certifications.filter((c) => {
@@ -365,8 +370,30 @@ export const IssuedCertificationsList: React.FC<IssuedCertificationsListProps> =
           </div>
         </div>
 
+        {/* Quick Revenue Strip */}
+        <div className="mt-3.5 p-3 bg-emerald-50/70 border border-emerald-200/80 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs">
+          <div className="flex items-center gap-2">
+            <span className="p-1.5 rounded-lg bg-emerald-100 text-emerald-700">
+              <Receipt className="w-4 h-4 text-emerald-600" />
+            </span>
+            <div>
+              <span className="font-bold text-slate-800">Civil Registry Collections:</span>
+              <span className="ml-2 text-slate-600 font-mono">
+                Current Month: <strong className="text-emerald-700">₱{Math.round(certsRevenue.currentMonthRevenue).toLocaleString()}</strong> (Resets 1st of month)
+              </span>
+              <span className="mx-2 text-slate-300">•</span>
+              <span className="text-slate-600 font-mono">
+                Current Year: <strong className="text-blue-700">₱{Math.round(certsRevenue.currentYearRevenue).toLocaleString()}</strong> (Resets Jan 1)
+              </span>
+            </div>
+          </div>
+          <div className="text-[11px] text-slate-500 font-mono flex items-center gap-2 self-end sm:self-auto">
+            <span>Next Mo Reset: {certsRevenue.monthlyResetDateFormatted}</span>
+          </div>
+        </div>
+
         {/* Filters */}
-        <div className="mt-4 pt-4 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-12 gap-3">
+        <div className="mt-3 pt-3 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-12 gap-3">
           <div className="sm:col-span-6 relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
               <Search className="w-4 h-4" />

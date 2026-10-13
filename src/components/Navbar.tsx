@@ -16,14 +16,18 @@ import {
   X,
   Stamp,
   Cloud,
+  Bell,
+  Receipt,
+  DollarSign,
 } from 'lucide-react';
+import { NotificationBell } from './NotificationBell';
 
 interface NavbarProps {
   currentUser: UserAccount;
-  activeCategory?: RegistryCategory | 'certifications' | 'settings' | 'certificate-designer';
-  activeTab?: RegistryCategory | 'certifications' | 'settings' | 'audit' | 'certificate-designer';
-  onSelectCategory?: (category: RegistryCategory | 'certifications' | 'settings' | 'certificate-designer') => void;
-  onTabChange?: (tab: RegistryCategory | 'certifications' | 'settings' | 'audit' | 'certificate-designer') => void;
+  activeCategory?: RegistryCategory | 'certifications' | 'settings' | 'certificate-designer' | 'notifications' | 'revenue';
+  activeTab?: RegistryCategory | 'certifications' | 'settings' | 'audit' | 'certificate-designer' | 'notifications' | 'revenue';
+  onSelectCategory?: (category: RegistryCategory | 'certifications' | 'settings' | 'certificate-designer' | 'notifications' | 'revenue') => void;
+  onTabChange?: (tab: RegistryCategory | 'certifications' | 'settings' | 'audit' | 'certificate-designer' | 'notifications' | 'revenue') => void;
   onOpenCreateModal?: () => void;
   onOpenIssueCert?: () => void;
   onLogout?: () => void;
@@ -37,7 +41,12 @@ interface NavbarProps {
     legalInstruments?: number;
     certs?: number;
     certifications?: number;
+    notifications?: number;
+    revenue?: number;
   };
+  unreadNotificationsCount?: number;
+  onViewAllNotifications?: () => void;
+  onNavigateToRecord?: (category: string, recordId?: string) => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -52,11 +61,16 @@ export const Navbar: React.FC<NavbarProps> = ({
   onSignOut,
   siteSettings,
   counts,
+  unreadNotificationsCount,
+  onViewAllNotifications,
+  onNavigateToRecord,
 }) => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const currentTab = activeTab || activeCategory || 'births';
 
-  const handleTabClick = (tab: RegistryCategory | 'certifications' | 'settings' | 'audit' | 'certificate-designer') => {
+  const handleTabClick = (
+    tab: RegistryCategory | 'certifications' | 'settings' | 'audit' | 'certificate-designer' | 'notifications' | 'revenue'
+  ) => {
     if (onTabChange) {
       onTabChange(tab);
     }
@@ -92,6 +106,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     deaths: counts?.deaths ?? 0,
     legal: counts?.legal ?? counts?.legalInstruments ?? 0,
     certs: counts?.certs ?? counts?.certifications ?? 0,
+    notifications: counts?.notifications ?? unreadNotificationsCount ?? 0,
   };
 
   const canManageSettings =
@@ -293,6 +308,25 @@ export const Navbar: React.FC<NavbarProps> = ({
                 1x, 2x, 3x
               </span>
             </button>
+
+            <button
+              type="button"
+              id="nav-tab-revenue"
+              onClick={() => handleTabClick('revenue')}
+              className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition cursor-pointer ${
+                currentTab === 'revenue'
+                  ? 'bg-blue-600/20 text-white border-l-3 border-blue-500 font-bold'
+                  : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
+              }`}
+            >
+              <div className="flex items-center gap-2.5">
+                <Receipt className={`w-4 h-4 ${currentTab === 'revenue' ? 'text-emerald-400' : 'text-slate-400'}`} />
+                <span>Revenue & Collections</span>
+              </div>
+              <span className="text-[9px] bg-emerald-950/80 text-emerald-300 border border-emerald-800/60 px-1.5 py-0.2 rounded font-mono font-bold">
+                ₱ Mo / Yr
+              </span>
+            </button>
           </div>
         </div>
 
@@ -340,6 +374,27 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <Database className={`w-4 h-4 ${currentTab === 'audit' ? 'text-blue-400' : 'text-slate-400'}`} />
                 <span>Audit Logs Trail</span>
               </div>
+            </button>
+
+            <button
+              type="button"
+              id="nav-tab-notifications"
+              onClick={() => handleTabClick('notifications')}
+              className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition cursor-pointer ${
+                currentTab === 'notifications'
+                  ? 'bg-blue-600/20 text-white border-l-3 border-blue-500 font-bold'
+                  : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
+              }`}
+            >
+              <div className="flex items-center gap-2.5">
+                <Bell className={`w-4 h-4 ${currentTab === 'notifications' ? 'text-amber-400' : 'text-slate-400'}`} />
+                <span>Notification Center</span>
+              </div>
+              {safeCounts.notifications > 0 && (
+                <span className="text-[10px] bg-rose-600 text-white px-1.5 py-0.2 rounded-full font-mono font-bold">
+                  {safeCounts.notifications > 99 ? '99+' : safeCounts.notifications}
+                </span>
+              )}
             </button>
           </div>
         </div>
@@ -423,6 +478,11 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
 
         <div className="flex items-center space-x-2">
+          <NotificationBell
+            currentUser={currentUser}
+            onViewAllNotifications={() => handleTabClick('notifications')}
+            onNavigateToRecord={onNavigateToRecord}
+          />
           <button
             type="button"
             onClick={handleCreate}

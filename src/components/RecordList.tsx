@@ -157,7 +157,14 @@ export const RecordList: React.FC<RecordListProps> = ({
     return (
       <div>
         <span className="font-bold text-slate-900 text-xs sm:text-sm block">{l.name}</span>
-        <span className="text-[11px] text-indigo-600 font-medium">{l.typeOfLegalInstrument}</span>
+        <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+          <span className="text-[11px] text-indigo-600 font-medium">{l.typeOfLegalInstrument}</span>
+          {l.orNumber && (
+            <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 font-mono font-semibold border border-emerald-200">
+              O.R. {l.orNumber} {l.amountPaid ? `• ₱${l.amountPaid}` : ''}
+            </span>
+          )}
+        </div>
       </div>
     );
   };

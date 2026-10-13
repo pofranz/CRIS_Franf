@@ -150,6 +150,8 @@ export interface LegalInstrumentRecord extends BaseRegistryRecord {
   dateOfRegistration: string;
   typeOfLegalInstrument: string;
   name: string;
+  orNumber?: string;
+  amountPaid?: string;
 }
 
 export type AnyRegistryRecord = BirthRecord | MarriageRecord | DeathRecord | LegalInstrumentRecord;
@@ -336,4 +338,132 @@ export interface PersonnelMemoryItem {
   licenseNumber?: string;
   usageCount?: number;
   lastUsedAt?: string;
+}
+
+export type NotificationType =
+  | 'RECORD_CREATED'
+  | 'RECORD_UPDATED'
+  | 'RECORD_DELETED'
+  | 'CERTIFICATION_ISSUED'
+  | 'USER_ACCOUNT'
+  | 'ANNOUNCEMENT'
+  | 'SYSTEM_EVENT';
+
+export type NotificationPriority = 'low' | 'normal' | 'high' | 'urgent';
+
+export interface CrisNotification {
+  id: string;
+  title: string;
+  message: string;
+  type: NotificationType;
+  priority?: NotificationPriority;
+  createdAt: string; // ISO string
+  read: boolean;
+  readAt?: string;
+  readByUsernames?: string[];
+  recipientUsername?: string; // Optional user-specific or 'all'
+  targetRoles?: UserRole[]; // Optional role targeting
+  relatedModule?: RegistryCategory | 'certifications' | 'settings' | 'users' | 'system';
+  relatedRecordId?: string;
+  relatedRecordNumber?: string;
+  actionByUsername?: string;
+  actionByName?: string;
+}
+
+export interface MonthlyRevenueData {
+  monthIndex: number; // 0 = Jan, 11 = Dec
+  monthName: string; // 'Jan', 'Feb', etc.
+  monthFullName: string; // 'January', 'February', etc.
+  year: number;
+  revenue: number;
+  transactionCount: number;
+  averageFee: number;
+  isCurrentMonth: boolean;
+  isPastMonth: boolean;
+  isFutureMonth: boolean;
+  periodStart: string; // e.g. "2026-10-01"
+  periodEnd: string; // e.g. "2026-10-31"
+  shareOfAnnualPercent: number;
+}
+
+export interface YearlyRevenueData {
+  year: number;
+  revenue: number;
+  transactionCount: number;
+  averageFee: number;
+  isCurrentYear: boolean;
+  periodStart: string; // e.g. "2026-01-01"
+  periodEnd: string; // e.g. "2026-12-31"
+}
+
+export interface RevenueSummaryMetrics {
+  // Current Month Metrics (Resets on 1st day of every month)
+  currentMonthRevenue: number;
+  currentMonthTransactions: number;
+  currentMonthAverageFee: number;
+  currentMonthLabel: string; // "October 2026"
+  monthlyResetDateFormatted: string; // e.g. "November 1, 2026"
+  daysUntilMonthlyReset: number;
+
+  // Current Year Metrics (Resets on 1st day of every year - Jan 1)
+  currentYearRevenue: number;
+  currentYearTransactions: number;
+  currentYearAverageFee: number;
+  currentYearLabel: string; // "2026"
+  yearlyResetDateFormatted: string; // e.g. "January 1, 2027"
+  daysUntilYearlyReset: number;
+
+  // Today Metrics
+  todayRevenue: number;
+  todayTransactions: number;
+
+  // All-Time
+  allTimeRevenue: number;
+  allTimeTransactions: number;
+
+  // Selected year monthly breakdown (12 months)
+  selectedYear: number;
+  selectedYearRevenue: number;
+  selectedYearTransactions: number;
+  monthlyBreakdown: MonthlyRevenueData[];
+
+  // Multi-year comparison
+  yearlyBreakdown: YearlyRevenueData[];
+
+  // Breakdown by Form / Service
+  serviceBreakdown: {
+    key: string;
+    label: string;
+    revenue: number;
+    count: number;
+    percentage: number;
+  }[];
+}
+
+export interface MiscellaneousRevenueRecord {
+  id: string;
+  orNumber: string;
+  amountPaid: string;
+  payerName: string;
+  serviceType: string;
+  category?: RegistryCategory | 'general';
+  dateIssued: string;
+  issuedByUsername: string;
+  notes?: string;
+  createdAt: string;
+}
+
+export interface CrisRevenueItem {
+  id: string;
+  orNumber: string;
+  amount: number;
+  date: string; // YYYY-MM-DD
+  payerOrSubject: string;
+  serviceDescription: string;
+  sourceType: 'CERTIFICATION' | 'MISCELLANEOUS_FEE' | 'LEGAL_INSTRUMENT';
+  formType?: string;
+  formLetter?: string;
+  category?: string;
+  issuedBy: string;
+  purpose?: string;
 }

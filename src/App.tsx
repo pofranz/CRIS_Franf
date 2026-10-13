@@ -27,6 +27,9 @@ import { SuperadminControlPanel } from './components/SuperadminControlPanel';
 import { CertificateDesigner } from './components/CertificateDesigner';
 import { PublicVerificationView } from './components/PublicVerificationView';
 import { RegistrationMonthlyChart } from './components/RegistrationMonthlyChart';
+import { NotificationBell } from './components/NotificationBell';
+import { NotificationCenterView } from './components/NotificationCenterView';
+import { RevenueSummaryDashboard } from './components/RevenueSummaryDashboard';
 import {
   Baby,
   Heart,
@@ -38,12 +41,19 @@ import {
   FileText,
   ShieldCheck,
   Trash2,
+  Bell,
+  Receipt,
 } from 'lucide-react';
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState<UserAccount | null>(() => authService.getCurrentUser());
   const [siteSettings, setSiteSettings] = useState<SiteSettings>(() => storageService.getSettings());
-  const [activeCategory, setActiveCategory] = useState<RegistryCategory | 'certifications' | 'settings' | 'certificate-designer'>('births');
+  const [activeCategory, setActiveCategory] = useState<
+    RegistryCategory | 'certifications' | 'settings' | 'certificate-designer' | 'notifications' | 'revenue'
+  >('births');
+  const [unreadNotifCount, setUnreadNotifCount] = useState<number>(() =>
+    currentUser ? storageService.getUnreadCount(currentUser) : 0
+  );
 
   // Registry Records State
   const [records, setRecords] = useState<AnyRegistryRecord[]>([]);
@@ -272,6 +282,20 @@ export default function App() {
     });
   };
 
+  // Live Notification Unread Counter Subscription
+  useEffect(() => {
+    if (!currentUser) return;
+    const updateUnread = () => {
+      setUnreadNotifCount(storageService.getUnreadCount(currentUser));
+    };
+    updateUnread();
+    const unsub = storageService.subscribeToNotifications(updateUnread);
+    return () => unsub();
+  }, [currentUser]);
+
+  // Live Revenue Summary
+  const revenueSummary = storageService.getRevenueSummary();
+
   // Counts for Stats Pills
   const counts = {
     births: storageService.getRecords('births').length,
@@ -281,6 +305,8 @@ export default function App() {
     legal: storageService.getRecords('legal-instruments').length,
     certifications: storageService.getCertifications().length,
     certs: storageService.getCertifications().length,
+    notifications: unreadNotifCount,
+    revenue: Math.round(revenueSummary.currentMonthRevenue),
   };
 
   if (showPublicVerify) {
@@ -339,14 +365,85 @@ export default function App() {
         onLogout={handleLogout}
         onSignOut={handleLogout}
         counts={counts}
+        unreadNotificationsCount={unreadNotifCount}
+        onViewAllNotifications={() => setActiveCategory('notifications')}
+        onNavigateToRecord={(cat, recId) => {
+          if (cat === 'certifications') {
+            setActiveCategory('certifications');
+          } else if (['births', 'marriages', 'deaths', 'legal-instruments'].includes(cat)) {
+            setActiveCategory(cat as RegistryCategory);
+            if (recId) {
+              const recs = storageService.getRecords(cat as RegistryCategory);
+              const found = recs.find((r) => r.id === recId);
+              if (found) setViewingRecord(found);
+            }
+          }
+        }}
       />
 
       {/* Main Content Workspace */}
       <div className="flex-1 flex flex-col min-w-0 min-h-screen">
+        {/* Desktop Top Header Bar with Notification Bell & Quick Actions */}
+        <header className="hidden lg:flex items-center justify-between px-6 py-3 bg-white border-b border-slate-200 shadow-2xs sticky top-0 z-20">
+          <div className="flex items-center space-x-3">
+            <span className="text-xs font-bold text-slate-800 tracking-tight flex items-center gap-1.5">
+              <span>{siteSettings.officeName}</span>
+              <span className="text-slate-300">•</span>
+              <span className="text-slate-500 font-normal">
+                {activeCategory === 'notifications'
+                  ? 'Civil Registry Notification Center'
+                  : activeCategory === 'settings'
+                  ? 'Administration & Settings'
+                  : activeCategory === 'certifications'
+                  ? 'Document Certifications (LCR 1/2/3)'
+                  : activeCategory === 'certificate-designer'
+                  ? 'Certificate Template Designer'
+                  : activeCategory === 'revenue'
+                  ? 'Civil Registry Revenue & Collections Summary'
+                  : `${activeCategory.toUpperCase()} Registry Archive`}
+              </span>
+            </span>
+          </div>
+
+          <div className="flex items-center space-x-3">
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/80 text-[10px] font-mono font-semibold">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span>RBAC v4.0 Active</span>
+            </div>
+
+            <NotificationBell
+              currentUser={currentUser}
+              onViewAllNotifications={() => setActiveCategory('notifications')}
+              onNavigateToRecord={(cat, recId) => {
+                if (cat === 'certifications') {
+                  setActiveCategory('certifications');
+                } else if (['births', 'marriages', 'deaths', 'legal-instruments'].includes(cat)) {
+                  setActiveCategory(cat as RegistryCategory);
+                  if (recId) {
+                    const recs = storageService.getRecords(cat as RegistryCategory);
+                    const found = recs.find((r) => r.id === recId);
+                    if (found) setViewingRecord(found);
+                  }
+                }
+              }}
+            />
+
+            <button
+              type="button"
+              id="top-header-create-record-btn"
+              onClick={handleOpenCreate}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-sm transition cursor-pointer"
+            >
+              <PlusCircle className="w-3.5 h-3.5" />
+              <span>+ NEW RECORD</span>
+            </button>
+          </div>
+        </header>
+
         {/* Main Container */}
         <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-5">
         {/* Top Summary & Stats Banner */}
-        <section className="grid grid-cols-2 sm:grid-cols-5 gap-3 sm:gap-4">
+        <section className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
           <button
             type="button"
             onClick={() => setActiveCategory('births')}
@@ -426,7 +523,7 @@ export default function App() {
           <button
             type="button"
             onClick={() => setActiveCategory('certifications')}
-            className={`p-4 rounded-xl border transition text-left cursor-pointer bg-white shadow-sm flex flex-col justify-between col-span-2 sm:col-span-1 ${
+            className={`p-4 rounded-xl border transition text-left cursor-pointer bg-white shadow-sm flex flex-col justify-between ${
               activeCategory === 'certifications'
                 ? 'border-blue-600 ring-2 ring-blue-500/20 bg-blue-50/20'
                 : 'border-slate-200 hover:border-slate-300'
@@ -441,19 +538,75 @@ export default function App() {
             <span className="text-2xl font-bold text-slate-900 font-mono">{counts.certifications}</span>
             <span className="text-[10px] text-emerald-600 font-bold mt-1">LCR Forms 1/2/3</span>
           </button>
+
+          <button
+            type="button"
+            id="top-stats-revenue-btn"
+            onClick={() => setActiveCategory('revenue')}
+            className={`p-4 rounded-xl border transition text-left cursor-pointer bg-white shadow-sm flex flex-col justify-between ${
+              activeCategory === 'revenue'
+                ? 'border-emerald-600 ring-2 ring-emerald-500/20 bg-emerald-50/20'
+                : 'border-slate-200 hover:border-slate-300'
+            }`}
+          >
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-slate-500 text-[10px] font-bold uppercase tracking-wider">Revenue</span>
+              <div className="w-6 h-6 rounded-md bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                <Receipt className="w-3.5 h-3.5" />
+              </div>
+            </div>
+            <span className="text-2xl font-bold text-slate-900 font-mono truncate">
+              ₱{Math.round(revenueSummary.currentMonthRevenue).toLocaleString()}
+            </span>
+            <div className="flex items-center justify-between text-[10px] mt-1">
+              <span className="text-emerald-700 font-bold" title="Current Month Total (Resets 1st of month)">
+                Mo: ₱{Math.round(revenueSummary.currentMonthRevenue).toLocaleString()}
+              </span>
+              <span className="text-slate-400 font-mono" title="Current Year Total (Resets Jan 1st)">
+                Yr: ₱{Math.round(revenueSummary.currentYearRevenue).toLocaleString()}
+              </span>
+            </div>
+          </button>
         </section>
 
         {/* Monthly Registrations Bar Chart for selected record category */}
-        {activeCategory !== 'settings' && activeCategory !== 'certificate-designer' && (
-          <RegistrationMonthlyChart
-            category={activeCategory}
-            records={records}
-            certifications={certifications}
-          />
-        )}
+        {activeCategory !== 'settings' &&
+          activeCategory !== 'certificate-designer' &&
+          activeCategory !== 'notifications' &&
+          activeCategory !== 'revenue' && (
+            <RegistrationMonthlyChart
+              category={activeCategory}
+              records={records}
+              certifications={certifications}
+            />
+          )}
 
         {/* Content View Router */}
-        {activeCategory === 'certificate-designer' ? (
+        {activeCategory === 'revenue' ? (
+          <RevenueSummaryDashboard
+            currentUser={currentUser}
+            siteSettings={siteSettings}
+            onNavigateToCertifications={() => setActiveCategory('certifications')}
+            onBackToDashboard={() => setActiveCategory('births')}
+          />
+        ) : activeCategory === 'notifications' ? (
+          <NotificationCenterView
+            currentUser={currentUser}
+            onNavigateToRecord={(cat, recId) => {
+              if (cat === 'certifications') {
+                setActiveCategory('certifications');
+              } else if (['births', 'marriages', 'deaths', 'legal-instruments'].includes(cat)) {
+                setActiveCategory(cat as RegistryCategory);
+                if (recId) {
+                  const recs = storageService.getRecords(cat as RegistryCategory);
+                  const found = recs.find((r) => r.id === recId);
+                  if (found) setViewingRecord(found);
+                }
+              }
+            }}
+            onBackToDashboard={() => setActiveCategory('births')}
+          />
+        ) : activeCategory === 'certificate-designer' ? (
           <CertificateDesigner
             currentUser={currentUser}
             siteSettings={siteSettings}

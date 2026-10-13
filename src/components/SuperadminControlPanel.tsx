@@ -268,6 +268,18 @@ export const SuperadminControlPanel: React.FC<SuperadminControlPanelProps> = ({
     storageService.saveUsers(allUsers);
     setUsers(storageService.getUsers(currentUser));
 
+    storageService.addNotification({
+      title: `New Staff Account Created: @${newUser.username}`,
+      message: `Account for ${newUser.name} was registered with role ${newUser.role.toUpperCase()} by ${currentUser.name}.`,
+      type: 'USER_ACCOUNT',
+      priority: 'normal',
+      recipientUsername: 'all',
+      targetRoles: ['superadmin', 'mcr', 'admin'],
+      relatedModule: 'settings',
+      actionByUsername: currentUser.username,
+      actionByName: currentUser.name,
+    });
+
     setNewUsername('');
     setNewPassword('');
     setNewName('');
@@ -283,8 +295,10 @@ export const SuperadminControlPanel: React.FC<SuperadminControlPanelProps> = ({
   // Toggle user delete permission
   const handleToggleUserPermission = (userId: string, permissionKey: keyof UserAccount['permissions']) => {
     const allUsers = storageService.getUsersRaw();
+    let targetUsername = '';
     const updated = allUsers.map((u) => {
       if (u.id === userId) {
+        targetUsername = u.username;
         return {
           ...u,
           permissions: {
@@ -297,6 +311,20 @@ export const SuperadminControlPanel: React.FC<SuperadminControlPanelProps> = ({
     });
     storageService.saveUsers(updated);
     setUsers(storageService.getUsers(currentUser));
+
+    if (targetUsername) {
+      storageService.addNotification({
+        title: `Staff Permissions Updated: @${targetUsername}`,
+        message: `Permission "${String(permissionKey)}" was updated for @${targetUsername} by ${currentUser.name}.`,
+        type: 'USER_ACCOUNT',
+        priority: 'normal',
+        recipientUsername: 'all',
+        targetRoles: ['superadmin', 'mcr'],
+        relatedModule: 'settings',
+        actionByUsername: currentUser.username,
+        actionByName: currentUser.name,
+      });
+    }
   };
 
   // Delete user
@@ -305,9 +333,26 @@ export const SuperadminControlPanel: React.FC<SuperadminControlPanelProps> = ({
       setFeedback({ type: 'error', message: 'You cannot delete your own active account.' });
       return;
     }
-    const allUsers = storageService.getUsersRaw().filter((u) => u.id !== userId);
-    storageService.saveUsers(allUsers);
+    const allUsers = storageService.getUsersRaw();
+    const targetUser = allUsers.find((u) => u.id === userId);
+    const filtered = allUsers.filter((u) => u.id !== userId);
+    storageService.saveUsers(filtered);
     setUsers(storageService.getUsers(currentUser));
+
+    if (targetUser) {
+      storageService.addNotification({
+        title: `Staff Account Removed: @${targetUser.username}`,
+        message: `Account for ${targetUser.name} was removed by ${currentUser.name}.`,
+        type: 'USER_ACCOUNT',
+        priority: 'high',
+        recipientUsername: 'all',
+        targetRoles: ['superadmin', 'mcr', 'admin'],
+        relatedModule: 'settings',
+        actionByUsername: currentUser.username,
+        actionByName: currentUser.name,
+      });
+    }
+
     setFeedback({ type: 'success', message: 'Staff account removed from system.' });
     setTimeout(() => setFeedback(null), 3000);
   };

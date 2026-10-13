@@ -33,6 +33,8 @@ import {
   Sparkles,
   ChevronDown,
   Check,
+  Receipt,
+  DollarSign,
 } from 'lucide-react';
 
 interface RecordFormModalProps {
@@ -449,6 +451,8 @@ export const RecordFormModal: React.FC<RecordFormModalProps> = ({
   // Legal Instrument specific
   const [legalType, setLegalType] = useState('AFFIDAVIT OF ACKNOWLEDGMENT');
   const [legalSubjectName, setLegalSubjectName] = useState('');
+  const [legalOrNumber, setLegalOrNumber] = useState('');
+  const [legalAmountPaid, setLegalAmountPaid] = useState('200.00');
 
   // Format Helper: STRICT CAPITALIZATION
   const toUpper = (val: string) => val.toUpperCase();
@@ -555,6 +559,8 @@ export const RecordFormModal: React.FC<RecordFormModalProps> = ({
         const l = initialRecord as LegalInstrumentRecord;
         setLegalType(l.typeOfLegalInstrument || 'AFFIDAVIT OF ACKNOWLEDGMENT');
         setLegalSubjectName(l.name || '');
+        setLegalOrNumber(l.orNumber || '');
+        setLegalAmountPaid(l.amountPaid || '200.00');
       }
     } else {
       setCategory(defaultCategory);
@@ -620,6 +626,8 @@ export const RecordFormModal: React.FC<RecordFormModalProps> = ({
       // Default Legal
       setLegalType('AFFIDAVIT OF ACKNOWLEDGMENT');
       setLegalSubjectName('');
+      setLegalOrNumber('');
+      setLegalAmountPaid('200.00');
     }
     setActiveStep('book');
     setErrorMessage('');
@@ -884,6 +892,8 @@ export const RecordFormModal: React.FC<RecordFormModalProps> = ({
         pdfAttachment: attachment,
         typeOfLegalInstrument: toUpper(legalType.trim()),
         name: toUpper(legalSubjectName.trim()),
+        orNumber: legalOrNumber.trim() ? toUpper(legalOrNumber.trim()) : undefined,
+        amountPaid: legalAmountPaid.trim() ? legalAmountPaid.trim() : undefined,
       };
       newRecord = legal;
     }
@@ -1698,6 +1708,80 @@ export const RecordFormModal: React.FC<RecordFormModalProps> = ({
                       className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-sm text-white uppercase font-semibold focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                       required
                     />
+                  </div>
+
+                  {/* Official Receipt & Payment Details (To be included in Revenue) */}
+                  <div className="mt-3 p-4 rounded-xl bg-slate-950/90 border border-emerald-500/40 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center">
+                          <Receipt className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <h4 className="text-xs font-bold text-emerald-300 uppercase tracking-wider flex items-center gap-1.5">
+                            Official Receipt (O.R.) & Payment Details
+                          </h4>
+                          <span className="text-[10px] text-slate-400">
+                            Included in Municipal Civil Registry Revenue & Collections
+                          </span>
+                        </div>
+                      </div>
+                      <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-950 border border-emerald-600/50 text-emerald-300 font-mono font-bold">
+                        ₱ Revenue Tracking
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                      <div>
+                        <div className="flex items-center justify-between mb-1">
+                          <label className="text-[11px] font-semibold text-slate-300">
+                            Official Receipt (O.R.) Number
+                          </label>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const randomOr = `OR-${Math.floor(892000 + Math.random() * 8000)}`;
+                              setLegalOrNumber(randomOr);
+                            }}
+                            className="text-[10px] text-emerald-400 hover:text-emerald-300 underline cursor-pointer"
+                          >
+                            Auto-Generate O.R.
+                          </button>
+                        </div>
+                        <input
+                          type="text"
+                          value={legalOrNumber}
+                          onChange={(e) => setLegalOrNumber(toUpper(e.target.value))}
+                          placeholder="E.G. OR-892315"
+                          className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white font-mono uppercase focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-semibold text-slate-300 mb-1">
+                          Amount Paid (₱ Revenue)
+                        </label>
+                        <div className="relative">
+                          <span className="absolute left-3 top-2 text-xs font-bold text-slate-400">₱</span>
+                          <input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            value={legalAmountPaid}
+                            onChange={(e) => setLegalAmountPaid(e.target.value)}
+                            placeholder="200.00"
+                            className="w-full pl-7 pr-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white font-mono focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <p className="text-[11px] text-slate-400 flex items-center gap-1.5 pt-1 border-t border-slate-800">
+                      <Info className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                      <span>
+                        Recording this payment will automatically add <strong>₱{legalAmountPaid || '0.00'}</strong> to the current month and yearly revenue totals. Revenue resets on the 1st of each month and Jan 1st yearly.
+                      </span>
+                    </p>
                   </div>
                 </>
               )}
